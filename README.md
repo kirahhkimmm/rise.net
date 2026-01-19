@@ -27,5 +27,3 @@
 
 
 🤝 Contribute • 🐛 Report Bug • 💬 Discussions
-
-```
