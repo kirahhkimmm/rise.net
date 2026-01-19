@@ -12,8 +12,8 @@
 
 | Creator | Role | GitHub |
 |---------|------|--------|
-| [Your Name](winkira) | Lead Developer | [![GitHub](https://img.shields.io/badge/GitHub-kirahhkimmm-black?style=flat&logo=github)](https://github.com/kirahhkimmm) |
-| [Co-Creator Name](lefty.121) | Designer/Contributor | [![GitHub](https://img.shields.io/badge/GitHub-lefty.121-black?style=flat&logo=github)](https://discord.com/users/1346252129232490519) |
+| [winkira]() | Lead Developer | [![GitHub](https://img.shields.io/badge/GitHub-kirahhkimmm-black?style=flat&logo=github)](https://github.com/kirahhkimmm) |
+| [lefty.121](https://discord.com/users/1346252129232490519) | Designer/Contributor | [![GitHub](https://img.shields.io/badge/GitHub-lefty.121-black?style=flat&logo=github)](https://discord.com/users/1346252129232490519) |
 
 ---
 
