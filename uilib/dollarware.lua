@@ -217,6 +217,34 @@ do
                     ControlGradient1 = Color3.fromRGB(255, 255, 255);
                     ControlGradient2 = Color3.fromRGB(192, 192, 192);
                 }
+            elseif (theme == 'frostbite' or theme == 'v4wurst') then
+                theme = {
+                    Primary = Color3.fromRGB(72, 188, 255);
+                    Secondary = Color3.fromRGB(169, 255, 108);
+                    
+                    Window1 = Color3.fromRGB(245, 247, 252);
+                    Window2 = Color3.fromRGB(234, 238, 245);
+                    Window3 = Color3.fromRGB(224, 230, 240);
+                    
+                    Button1 = Color3.fromRGB(250, 252, 255);
+                    Button2 = Color3.fromRGB(240, 245, 252);
+                    Button3 = Color3.fromRGB(216, 236, 255);
+                    Button4 = Color3.fromRGB(205, 228, 250);
+                    
+                    Stroke = Color3.fromRGB(178, 188, 204);
+                    StrokeHover = Color3.fromRGB(107, 154, 206);
+                    
+                    Inset1 = Color3.fromRGB(255, 255, 255);
+                    Inset2 = Color3.fromRGB(212, 219, 232);
+                    Inset3 = Color3.fromRGB(232, 237, 246);
+                    
+                    TextPrimary = Color3.fromRGB(35, 43, 57);
+                    TextStroke = Color3.fromRGB(255, 255, 255);
+                    TextDim = Color3.fromRGB(95, 108, 126);
+                    
+                    ControlGradient1 = Color3.fromRGB(255, 255, 255);
+                    ControlGradient2 = Color3.fromRGB(220, 231, 247);
+                }
             elseif (theme == 'grape') then       -- purple
                 
                 theme = {
