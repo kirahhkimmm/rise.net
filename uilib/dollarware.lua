@@ -36,6 +36,7 @@ end
 local args = {...}
 local theme
 local rounding
+local noCorners = false
 local animSpeed = 1e-12
 
 -- theme 
@@ -44,6 +45,7 @@ do
         local settings = args[1]
         theme = settings.theme
         rounding = settings.rounding
+        noCorners = (settings.noCorners == true) or (settings.disableUICorners == true)
         if (settings.smoothDragging == nil) then 
             settings.smoothDragging = true 
         end
@@ -285,6 +287,9 @@ do
     if (rounding == nil) then
         rounding = true 
     end
+    if (noCorners) then
+        rounding = false
+    end
     if (typeof(theme) ~= 'table') then
         theme = {
             Primary = Color3.fromRGB(38, 233, 195); -- primary accent
@@ -313,6 +318,15 @@ do
             ControlGradient1 = Color3.fromRGB(255, 255, 255); -- top color for extra gradient effects
             ControlGradient2 = Color3.fromRGB(192, 192, 192); -- bottom color for extra gradient effects
         }
+    end
+end
+
+local function stripAllCorners(root)
+    if not root then return end
+    for _, inst in ipairs(root:GetDescendants()) do
+        if inst:IsA('UICorner') then
+            pcall(function() inst:Destroy() end)
+        end
     end
 end
 
@@ -350,6 +364,15 @@ local uiScreen = Instance.new('ScreenGui') do
         
         notifContainer.Parent = uiScreen
     end
+end
+
+if (noCorners) then
+    task.spawn(function()
+        while (uiScreen and uiScreen.Parent) do
+            stripAllCorners(uiScreen)
+            task.wait(0.35)
+        end
+    end)
 end
 
 -- tooltip
@@ -7768,9 +7791,10 @@ do
 
         
         for i,v in pairs(elemClasses) do 
-            if not (v.instances) then continue end 
-            for i,v in pairs(v.instances) do 
-                v:Destroy() 
+            if v.instances then
+                for i,v in pairs(v.instances) do 
+                    v:Destroy() 
+                end
             end
         end
         
@@ -7848,9 +7872,10 @@ do
                 
                 for i, n in ipairs(notifs) do 
                     local nmain = n.instances.main
-                    if (nmain.AbsolutePosition.Y > mainPos) then continue end
-                    local p = UDim2.new(1, 0, 1, nmain.Position.Y.Offset + 20 + notif.size.Y.Offset)
-                    tween(nmain, {Position = p}, 0.3, 1)
+                    if (nmain.AbsolutePosition.Y <= mainPos) then
+                        local p = UDim2.new(1, 0, 1, nmain.Position.Y.Offset + 20 + notif.size.Y.Offset)
+                        tween(nmain, {Position = p}, 0.3, 1)
+                    end
                 end
             end)
         end
