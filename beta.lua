@@ -10,31 +10,101 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local function compileLuaChunk(source, label)
+    if typeof(loadstring) ~= "function" then
+        return nil, "loadstring is unavailable in this executor"
+    end
+    if typeof(source) ~= "string" or #source == 0 then
+        return nil, ("%s source was empty"):format(label or "unknown")
+    end
+    local compiled, err = loadstring(source)
+    if not compiled then
+        return nil, ("%s compile error: %s"):format(label or "unknown", tostring(err))
+    end
+    return compiled
+end
+
+local function tryHttpGet(url)
+    local ok, body = pcall(function()
+        return game:HttpGet(url)
+    end)
+    if ok and typeof(body) == "string" and #body > 0 then
+        return body
+    end
+    return nil, body
+end
+
 local uiLoader
 do
     local localPath = "rise.net/dollarware.lua"
-    local loadedLocal = false
+    local remoteCandidates = {
+        "https://raw.githubusercontent.com/kirahhkimmm/rise.net/refs/heads/main/uilib/dollarware.lua",
+        "https://raw.githubusercontent.com/kirahhkimmm/rise.net/main/uilib/dollarware.lua"
+    }
+    local loaderErrors = {}
 
-    pcall(function()
-        if readfile and isfile and isfile(localPath) then
-            local localSource = readfile(localPath)
-            if localSource and #localSource > 0 then
-                uiLoader = loadstring(localSource)
-                loadedLocal = uiLoader ~= nil
+    if readfile and isfile and isfile(localPath) then
+        local okRead, localSource = pcall(function()
+            return readfile(localPath)
+        end)
+        if okRead then
+            local compiled, compileErr = compileLuaChunk(localSource, "local ui lib")
+            if compiled then
+                uiLoader = compiled
+            else
+                table.insert(loaderErrors, compileErr)
+            end
+        else
+            table.insert(loaderErrors, "failed reading local ui lib: " .. tostring(localSource))
+        end
+    else
+        table.insert(loaderErrors, "local ui lib not found at " .. localPath)
+    end
+
+    if not uiLoader then
+        for _, url in ipairs(remoteCandidates) do
+            local remoteSource, fetchErr = tryHttpGet(url)
+            if remoteSource then
+                local compiled, compileErr = compileLuaChunk(remoteSource, "remote ui lib")
+                if compiled then
+                    uiLoader = compiled
+                    break
+                end
+                table.insert(loaderErrors, compileErr)
+            else
+                table.insert(loaderErrors, ("http get failed (%s): %s"):format(url, tostring(fetchErr)))
             end
         end
-    end)
+    end
 
-    if not loadedLocal then
-        uiLoader = loadstring(game:HttpGet('https://raw.githubusercontent.com/kirahhkimmm/rise.net/refs/heads/main/uilib/dollarware.lua'))
+    if not uiLoader then
+        warn("[rise.net] Failed to initialize UI loader:\n" .. table.concat(loaderErrors, "\n"))
+        return
     end
 end
 
-local ui = uiLoader({
+local uiConfig = {
     rounding = false,
     theme = 'frostbite',
     smoothDragging = true
-})
+}
+
+local uiOk, ui = pcall(uiLoader, uiConfig)
+if uiOk and typeof(ui) == "function" then
+    -- Some builds return a constructor function instead of the UI object.
+    local ctorOk, ctorResult = pcall(ui, uiConfig)
+    if ctorOk then
+        ui = ctorResult
+    else
+        uiOk = false
+        ui = ctorResult
+    end
+end
+
+if not uiOk or typeof(ui) ~= "table" then
+    warn("[rise.net] UI bootstrap failed: " .. tostring(ui))
+    return
+end
 
 ui.autoDisableToggles = true
 
@@ -1002,7 +1072,7 @@ local function enableVapeV4Fly()
     local hum = char:FindFirstChildOfClass('Humanoid')
     if not hrp or not hum then return end
 
-    -- **1. NETWORK OWNERSHIP SPAM** 🔥
+    -- **1. NETWORK OWNERSHIP SPAM**
     flyOwnershipConnection = RunService.Heartbeat:Connect(function()
         ownershipSpamCounter = ownershipSpamCounter + 1
         if ownershipSpamCounter % math.floor(networkOwnershipSpamInterval * 60) == 0 then
@@ -1015,7 +1085,7 @@ local function enableVapeV4Fly()
         end
     end)
 
-    -- **2. ENHANCED BODYVELOCITY** ⚡
+    -- **2. ENHANCED BODYVELOCITY**
     if flyBV then flyBV:Destroy() end
     flyBV = Instance.new('BodyVelocity')
     flyBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
@@ -1023,7 +1093,7 @@ local function enableVapeV4Fly()
     flyBV.Velocity = Vector3.new(0, 0, 0)
     flyBV.Parent = hrp
 
-    -- **3. VAPE-STYLE MOVEMENT** 🎮
+    -- **3. VAPE-STYLE MOVEMENT**
     local flyBackoff = 1 -- local multiplier to avoid mutating global UI speed
     flyVelocityConnection = RunService.Heartbeat:Connect(function()
         if not flyActive or not flyBV or not hrp.Parent then return end
@@ -1106,7 +1176,7 @@ local function enableVapeV4Fly()
                 end
 
                 if HUB.AUTO_KICK and rubberCount >= 3 then
-                    pcall(function() ui.notify({ title = 'Rise', message = 'Rubberband detected — soft backoff', duration = 2 }) end)
+                    pcall(function() ui.notify({ title = 'Rise', message = 'Rubberband detected - soft backoff', duration = 2 }) end)
                     local originalSpeed = features.fly and features.fly.speed or 50
                     local safeFactor = 0.5
                     flyBackoff = safeFactor
